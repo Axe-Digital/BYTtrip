@@ -1,0 +1,74 @@
+from flask import Flask, jsonify
+import sqlite3
+
+app = Flask(__name__)
+
+# Fonction pour récupérer les types de voyage de la base de données
+def get_types_voyage():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM type_voyage ORDER BY id_type_voyage ASC")
+    types_voyage = cursor.fetchall()
+    conn.close()
+    return types_voyage
+
+# Utilisation de Flask pour renvoyer les types de voyage
+@app.route('/types-de-voyage', methods=['GET'])
+def types_voyage():
+    # Récupérer les types de voyage de la base de données
+    types_voyage = get_types_voyage()
+    # Renvoyer un JSON avec les types de voyage
+    types_voyage_dict = {}
+    for row in types_voyage:
+        types_voyage_dict[row[0]] = row[1]
+    return jsonify(types_voyage_dict)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+// Récupérer les types de voyage de l'API Flask
+Future<Map<String, dynamic>> getVoyageTypes() async {
+  // Effectuer une requête HTTP GET à l'API Flask
+  http.Response response = await http.get('http://127.0.0.1:5000/types-de-voyage');
+  // Extraire la réponse JSON et la renvoyer
+  return jsonDecode(response.body);
+}
+
+// Afficher un menu déroulant avec les types de voyage disponibles
+FutureBuilder(
+  future: getVoyageTypes(),
+  builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+    if (snapshot.hasData) {
+      // Extraire les types de voyage de la réponse JSON
+      Map<String, dynamic> voyageTypes = snapshot.data!;
+      // Convertir les types de voyage en une liste pour être utilisée dans un menu déroulant
+      List<String> typesList = voyageTypes.values.toList();
+      // Afficher un menu déroulant avec les types de voyage dans votre interface utilisateur
+      return DropdownButtonFormField(
+        items: typesList.map((String value) {
+          return DropdownMenuItem(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        onChanged: (newValue) {
+          setState(() {
+            // Action à réaliser lorsque l'utilisateur choisit un type de voyage
+          });
+        },
+        // Ajouter une étiquette pour le menu déroulant
+        decoration: InputDecoration(
+          labelText: 'Type de voyage',
+        ),
+      );
+    } else {
+      // Afficher un message de chargement ou de disparition
+      return CircularProgressIndicator();
+    }
+  },
+)

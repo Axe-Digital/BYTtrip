@@ -1,4 +1,4 @@
-# ariane
+# BYTtrip
 
 A new Flutter project.
 
